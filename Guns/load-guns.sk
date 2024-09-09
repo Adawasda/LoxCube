@@ -1,2 +1,5 @@
 options:
     test: "hui"
+
+on right click:
+    send "Hello World!"
