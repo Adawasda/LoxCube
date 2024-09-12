@@ -1,0 +1,32 @@
+Guns:
+  Gun:
+    MaxAmmo: 3
+    Cooldown: 1
+    Usage: 100
+    Model: 1
+    Effect: None
+    Dmg: 7
+    ReloadSound: item.skguns.loadmagout
+    ShootSound: item.rifle.fire
+    enchantments:
+      - minecraft:quick_charge=2
+      - minecraft:unbreaking=3
+  PoisonGun:
+    MaxAmmo: 6
+    Cooldown: 1
+    Usage: 50
+    Model: 1
+    Effect: Poison
+    Dmg: 3
+    ReloadSound: item.skguns.loadmagout
+    ShootSound: item.rifle.fire
+
+  FireGun:
+    MaxAmmo: 6
+    Cooldown: 1
+    Usage: 50
+    Model: 1
+    Effect: Fire
+    Dmg: 3
+    ReloadSound: item.skguns.loadmagout
+    ShootSound: item.rifle.fire
