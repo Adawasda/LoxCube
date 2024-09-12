@@ -1,0 +1,114 @@
+import:
+    io.papermc.paper.event.entity.EntityLoadCrossbowEvent
+
+
+on load:
+    set {-n} to nbt compound from "{""minecraft:charged_projectiles"":[{components:{""minecraft:intangible_projectile"":{}},count:1,id:""minecraft:arrow""}]}"
+    set {-n2} to nbt compound from "{""minecraft:charged_projectiles"":[{components:{""minecraft:intangible_projectile"":{}},count:0,id:""minecraft:air""}]}"
+
+
+on sneak toggle:
+    set {_isSneaking} to true if player is not sneaking
+    set {_isSneaking} to false if player is sneaking
+    if isGun(player's tool) is true:
+        set {_item} to player's tool 
+        if {_isSneaking} is true:
+            set {_MaxAmmo} to int tag "MaxAmmo" of custom nbt of {_item}
+            set {_Ammo} to int tag "Ammo" of custom nbt of {_item}
+
+            send action bar "Перезарядка: %{_Ammo}%&8/&f%{_MaxAmmo}%" to player
+            #set {_item} to {_item} with nbt from "{Charged:0b}"
+            #set player's tool to {_item}
+
+        else:
+            send action bar "Стрельба" to player
+            set player's tool to player's tool with nbt {-n} if int tag "Ammo" of custom nbt of player's tool > 0
+
+
+
+on EntityLoadCrossbowEvent:
+    set {_player} to event.getEntity()
+    set {_item} to {_player}'s tool 
+    if isGun({_item}) is true:
+        if {_player} is not sneaking:
+            cancel event 
+            send action bar "&cЧтобы перезарядить оружие зажми шифт и пкм" to {_player}
+
+        else:
+            damage {_player}'s tool by 1
+            set {_Ammo} to int tag "Ammo" of custom nbt of {_item}
+            set {_MaxAmmo} to int tag "MaxAmmo" of custom nbt of {_item}
+            set {_sound} to string tag "ReloadSound" of custom nbt of {_item}
+            if {_Ammo} < {_MaxAmmo}:
+                add 1 to int tag "Ammo" of custom nbt of {_player}'s tool
+                set string tag "Usage" of custom nbt of {_player}'s tool to {_usage}
+                set {_Ammo} to int tag "Ammo" of custom nbt of {_player}'s tool 
+                if {_Ammo} != {_MaxAmmo}:
+                    cancel event
+                else:
+                    set {_player}'s tool to {_player}'s tool with nbt {-n}
+                
+                play sound {_sound} at {_player}
+                send action bar "Перезарядка: %{_Ammo}%&8/&f%{_MaxAmmo}%" to {_player}
+            else:
+                #cancel event 
+                stop 
+
+on right click:
+    set {_player} to player
+    if isGun({_player}'s tool) is true:
+        if {_player} is not sneaking:
+            set {_item} to {_player}'s tool
+            set {_Ammo} to int tag "Ammo" of custom nbt of {_item}
+            set {_MaxAmmo} to int tag "MaxAmmo" of custom nbt of {_item}
+            if {_Ammo} > 0:
+                remove 1 from {_Ammo}
+                set int tag "Ammo" of custom nbt of {_player}'s tool to {_Ammo}
+                run task 0 ticks later:
+                    loop 3 times:
+                        set pitch of {_player} to pitch of {_player} - 1
+                        wait 1 tick 
+                    loop 3 times:
+                        set pitch of {_player} to pitch of {_player} + 1
+                        wait 1 tick 
+                send action bar "%{_Ammo}%/%{_MaxAmmo}%" to {_player}
+                set player's tool to player's tool with nbt {-n}
+                damage {_player}'s tool by 1
+            else:
+                set player's tool to player's tool with nbt {-n2}
+                cancel event
+
+
+on shoot:
+    if isGun(shooter's tool) is true:
+        play sound (string tag "ShootSound" of custom nbt of shooter's tool) at shooter
+        if shooter is sneaking:
+            cancel event
+        else:
+            set (metadata value "isGun" of event-projectile) to true 
+            set (metadata value "Effect" of event-projectile) to string tag "Effect" of custom nbt of shooter's tool
+            set (metadata value "Owner" of event-projectile) to shooter 
+            set (metadata value "Damage" of event-projectile) to int tag "Dmg" of custom nbt of (shooter's tool)
+on projectile collide:
+    event-projectile is arrow
+    set {_arrow} to event-projectile
+    if metadata value "isGun" of event-projectile is true:
+        set {_Effect} to (metadata value "Effect" of event-projectile)
+        set {_Owner} to  (metadata value "Owner" of event-projectile)
+        set {_Damage} to (metadata value "Damage" of event-projectile)
+        cancel event 
+        delete event-projectile
+
+        (event-entity).damage({_Damage}, {_Owner})
+        if {_Effect} is "Fire":
+            ignite (event-entity) for 1 second 
+        if {_Effect} is "Poison":
+            apply poison to (event-entity) for 5 seconds
+
+
+on projectile hit:
+    if (metadata value "isGun" of event-projectile) is true:
+        wait 1 second 
+        draw 1 of dust particle using dustOption(white,2) at event-projectile ~ vector(0,0.5,0)
+        kill event-projectile 
+
