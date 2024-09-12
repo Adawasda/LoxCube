@@ -23,18 +23,18 @@ function reloadBar(i: integer) :: strings:
 
 function statsBar(i: integer) :: string:
     if {_i} <= 0:
-        return "&8&m                    "
+        return "&8&m████████████████████"
     loop {_i} times:
-        set {_block} to "&a&m  "
+        set {_block} to "&a&m██"
         if loop-value > 3:
-            set {_block} to "&e&m  "
+            set {_block} to "&e&m██"
         if loop-value > 6:
-            set {_block} to "&6&m  "
+            set {_block} to "&6&m██"
         if loop-value > 9:
-            set {_block} to "&c&m  "
+            set {_block} to "&c&m██"
         add {_block} to {_bar::*}
     loop 10 - size of {_bar::*} times:
-        add "&8&m  " to {_bar::*}
+        add "&8&m██" to {_bar::*}
     set {_bar} to join (first 10 elements of {_bar::*})
     return {_bar}
 
@@ -48,5 +48,11 @@ function ProgressBar(cur:number,max:num, unfilled:string="gray", size: integer=1
             set {_color} to "<yellow>" if loop-integer is between 30% of {_size} and 50% of {_size}
             set {_color} to "&6" if loop-integer is between 51% of {_size} and 89% of {_size}
             set {_color} to "&c" if loop-integer is between 90% of {_size} and 100% of {_size}
-            add "%{_color}%&m&l " to {_list::*}     
+            add "%{_color}%&l||" to {_list::*}     
     return join {_list::*}  
+
+on load:
+    reloadAllGuns()
+
+function getEnchantFromKey(key: string) :: enchantment:
+	return enchantment from key (namespaced key of {_key})
