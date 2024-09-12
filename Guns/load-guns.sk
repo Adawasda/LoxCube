@@ -3,13 +3,7 @@ options:
 
 on load:
     set {-properties::*} to "MaxAmmo:int tag:30","Dmg:int tag:7","Cooldown:double tag:5","Usage:int tag:10","Model:int tag", "Effect:string tag", "ReloadSound:string tag", "ShootSound:string tag"
-    register shapeless recipe:
-        id: "custom:bullet"
-        result: arrow named "&fСамодельная пуля"
-        ingredients:
-            add iron nugget to ingredients
-            add gunpowder to ingredients
-            add arrow to ingredients
+
 ###
 MaxAmmo: int
 Cooldown: double
