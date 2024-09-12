@@ -1,0 +1,52 @@
+function debug(string: string):
+    send "&6[&8Guns&6] <yellow>%{_string}%" to console
+
+function warning(string: string):
+    send "&6[&8Guns&6] &c%{_string}%" to console
+
+function reloadBar(i: integer) :: strings:
+    if {_i} <= 0:
+        return "&8██████████"
+    loop {_i} times:
+        set {_block} to "&c█"
+        if {_i} > 3:
+            set {_block} to "&6█"
+        if {_i} > 6:
+            set {_block} to "&e█"
+        if {_i} > 9:
+            set {_block} to "&a█"
+        add {_block} to {_bar::*}
+    loop 10 - size of {_bar::*} times:
+        add "&8█" to {_bar::*}
+    set {_bar} to join (first 10 elements of {_bar::*})
+    return {_bar}
+
+function statsBar(i: integer) :: string:
+    if {_i} <= 0:
+        return "&8&m                    "
+    loop {_i} times:
+        set {_block} to "&a&m  "
+        if loop-value > 3:
+            set {_block} to "&e&m  "
+        if loop-value > 6:
+            set {_block} to "&6&m  "
+        if loop-value > 9:
+            set {_block} to "&c&m  "
+        add {_block} to {_bar::*}
+    loop 10 - size of {_bar::*} times:
+        add "&8&m  " to {_bar::*}
+    set {_bar} to join (first 10 elements of {_bar::*})
+    return {_bar}
+
+function ProgressBar(cur:number,max:num, unfilled:string="gray", size: integer=10) :: text:
+    set {_percent} to {_size}*({_cur}/{_max})
+    loop {_size} times:
+        if loop-value is greater than {_percent}:
+            add colored "<%{_unfilled}%>&l&m " to {_list::*} 
+        else:
+            set {_color} to "&a" if loop-integer is between 0 and 30% of {_size}
+            set {_color} to "<yellow>" if loop-integer is between 30% of {_size} and 50% of {_size}
+            set {_color} to "&6" if loop-integer is between 51% of {_size} and 89% of {_size}
+            set {_color} to "&c" if loop-integer is between 90% of {_size} and 100% of {_size}
+            add "%{_color}%&m&l " to {_list::*}     
+    return join {_list::*}  
