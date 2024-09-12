@@ -1,5 +1,69 @@
 options:
-    test: "hui"
+    item: crossbow
 
-on right click:
-    send "Hello World!"
+on load:
+    set {-properties::*} to "MaxAmmo:int tag:30","Dmg:int tag:7","Cooldown:double tag:5","Usage:int tag:10","Model:int tag", "Effect:string tag", "ReloadSound:string tag", "ShootSound:string tag"
+    register shapeless recipe:
+        id: "custom:bullet"
+        result: arrow named "&fСамодельная пуля"
+        ingredients:
+            add iron nugget to ingredients
+            add gunpowder to ingredients
+            add arrow to ingredients
+###
+MaxAmmo: int
+Cooldown: double
+Usage: int
+Model: int
+Effect: String [None/Fire/Poison/Explosion]
+###
+
+function reloadAllGuns():
+    delete {-Guns::*}
+    load "plugins/GunsV/Guns.yml" as "guns"
+    loop yaml node keys "Guns" of "guns":
+        add loop-value to {_names::*}
+    if {_names::*} is not set:
+        warning("Guns is not defined!")
+        stop 
+    loop {_names::*}:
+        set {_item} to {@item}
+        set {_name} to loop-value-1
+        set boolean tag "isGun" of custom nbt of {_item} to true
+        loop {-properties::*}:
+            set {_prop} to first element of (loop-value-2 split at ":")
+            if yaml value "Guns.%{_name}%.%{_prop}%" from "guns" is not set:
+                warning("%{_prop}% &fproperty in %{_name}% &fis not set!")
+                stop 
+            set {_%{_prop}%} to yaml value "Guns.%{_name}%.%{_prop}%" from "guns"
+            if 3th element of (loop-value-2 split at ":") is set:
+                set {_max} to (3th element of (loop-value-2 split at ":")) parsed as integer
+                add "&f%{_prop}%&8: %ProgressBar({_%{_prop}%},{_max})%" to {_lore::*}
+            set {_type} to 2th element of (loop-value-2 split at ":")
+            set ({_type} parsed as nbt type) "%{_prop}%" of custom nbt of {_item} to {_%{_prop}%}
+            set int tag "Ammo" of custom nbt of {_item} to 0 
+
+        # Enchants
+        loop yaml list "Guns.%{_name}%.enchantments" of "guns":
+            set {_s::*} to loop-value-2 split at "="
+            set {_e} to getEnchantFromKey({_s::1})
+            set {_l} to {_s::2} parsed as number 
+            set enchantment level of {_e} of {_item} to {_l}
+
+        set name of {_item} to "&f%{_name}%"
+        set custom model data of {_item} to {_Model}
+        set max durability of {_item} to {_Usage} ? -1
+        set {-Guns::%{_name}%} to {_item} with lore {_lore::*}
+        debug("Gun %{_name}% loaded.")
+        delete {_lore::*}
+
+command /Guns [<string>]:
+    permission: op 
+    trigger:
+        if {-Guns::%arg-1%} is not set:
+            send "&cThere's no weapon with name: &f%arg-1%"
+            stop 
+        give {-Guns::%arg-1%} to player
+
+function isGun(item: item):: boolean:
+    return (boolean tag "isGun" of custom nbt of {_item}) ? false
