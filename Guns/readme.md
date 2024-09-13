@@ -3,3 +3,4 @@ Addons:
 
 
 Guns.yml for format of Guns
+Works only Skript 2.9.X 1.20.5+
